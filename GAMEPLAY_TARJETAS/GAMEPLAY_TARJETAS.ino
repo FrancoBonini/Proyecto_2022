@@ -11,8 +11,12 @@
 #define TARJETA5  49
 #define TARJETA6  48
 #define TARJETA7  47
+#define SERVO1    46            //PUERTA DEL MULTIBALL
+#define SENSOR_MULTIBALL 
 
-typedef enum{TARJETA1_S1, TARJETA1_S2, TARJETA1_S3, TARJETA1_S4, TARJETA2_S1, TARJETA2_S2, TARJETA2_S3, TARJETA2_S4, TARJETA3_S1, TARJETA3_S2, TARJETA3_S3, TARJETA3_S4, TARJETA4_S1, TARJETA4_S2, TARJETA4_S3, TARJETA4_S4, TARJETA5_S1, TARJETA5_S2, TARJETA5_S3, TARJETA5_S4, TARJETA6_S1, TARJETA6_S2, TARJETA6_S3, TARJETA6_S4, TARJETA7_S1, TARJETA7_S2, TARJETA7_S3, TARJETA7_S4, PUERTA_ABIERTA, PUERTA_CERRADA, MULTIBALL_ESPERA, MULTIBALL_ACTIVO, ESTADO_N} estadoMEF_t;
+typedef enum{TARJETA1_S1, TARJETA1_S2, TARJETA1_S3, TARJETA1_S4, TARJETA2_S1, TARJETA2_S2, TARJETA2_S3, TARJETA2_S4, TARJETA3_S1, TARJETA3_S2, TARJETA3_S3,
+TARJETA3_S4, TARJETA4_S1, TARJETA4_S2, TARJETA4_S3, TARJETA4_S4, TARJETA5_S1, TARJETA5_S2, TARJETA5_S3, TARJETA5_S4, TARJETA6_S1, TARJETA6_S2, TARJETA6_S3,
+TARJETA6_S4, TARJETA7_S1, TARJETA7_S2, TARJETA7_S3, TARJETA7_S4, PUERTA_ABIERTA, PUERTA_CERRADA, MULTIBALL_ESPERA, MULTIBALL_ACTIVO, ESTADO_N} estadoMEF_t;
 
   bool state_TARJ1 = 1;
   bool state_TARJ2 = 1;
@@ -21,6 +25,12 @@ typedef enum{TARJETA1_S1, TARJETA1_S2, TARJETA1_S3, TARJETA1_S4, TARJETA2_S1, TA
   bool state_TARJ5 = 1;
   bool state_TARJ6 = 1;
   bool state_TARJ7 = 1;
+  bool MULTIBALL = 0 ;
+  bool banco_tarjetas_completo = 0;
+  bool banco_tarjetas_multiball = 0;
+  
+
+  int puntaje,banco_tarjetas, contador_colecionado_multiball;
   
   estadoMEF_t  eA_TARJETA1;     //ESTADOACTUAL_TARJETA Nª1
   uint8_t tInicio_TARJ1;
@@ -36,6 +46,9 @@ typedef enum{TARJETA1_S1, TARJETA1_S2, TARJETA1_S3, TARJETA1_S4, TARJETA2_S1, TA
   uint8_t tInicio_TARJ6;
   estadoMEF_t  eA_TARJETA7;     //ESTADOACTUAL_TARJETA Nª7
   uint8_t tInicio_TARJ7;
+
+  estadoMEF_t  eA_MULTIBALL;     //ESTADOACTUAL_MULTIBALL  
+  uint8_t tInicio_MULTIBALL;
   
   void InicializarMEF_TARJ1(void);        //INICIALIZAR TARJETA 1
   void ActualizarMEF_TARJ1(void);         //ACTUALIZA TARJETA 1
@@ -57,6 +70,9 @@ typedef enum{TARJETA1_S1, TARJETA1_S2, TARJETA1_S3, TARJETA1_S4, TARJETA2_S1, TA
   
   void InicializarMEF_TARJ7(void);
   void ActualizarMEF_TARJ7(void);
+
+  void InicializarMEF_MULTIBALL(void);
+  void ActualizarMEF_MULTIBALL(void);
 
     //primer parametro = cantidad de pixeles en la tira
    //segundo parametro = pin digital del arduino
@@ -84,6 +100,7 @@ void setup() {
    pinMode(TARJETA5,INPUT_PULLUP);
    pinMode(TARJETA6,INPUT_PULLUP);
    pinMode(TARJETA7,INPUT_PULLUP);
+   pinMode(SERVO1,INPUT_PULLUP);
 
   tira.begin();
   tira.show();
@@ -107,7 +124,7 @@ void setup() {
   InicializarMEF_TARJ6();
   InicializarMEF_TARJ7();
   
- 
+  InicializarMEF_MULTIBALL();
 
 
 }
@@ -123,6 +140,8 @@ void loop() {
   ActualizarMEF_TARJ6();
   ActualizarMEF_TARJ7();
 
+  ActualizarMEF_MULTIBALL();
+
   tInicio_TARJ1 = millis();
   tInicio_TARJ2 = millis();
   tInicio_TARJ3 = millis();
@@ -134,7 +153,7 @@ void loop() {
 }
 
 //************* TIRAS LED *************************
-void tiraState(bool state, int numpixel)
+void tiraState(bool state, int numpixel)                  
  {
   if(state==true)
   {
@@ -177,50 +196,60 @@ void InicializarMEF_TARJ7(void) {
     eA_TARJETA7 = TARJETA1_S7;                // Establece estado inicial 
     tInicio_TARJ7 = tickRead();              // También inicia temporizacion  
 }
+void InicializarMEF_MULTIBALL(void){
+  eA_MULTIBALL = PUERTA_ABIERTA;              // Establece estado inicial 
+  tInicio_MULTIBALL = tickRead();            // También inicia temporizacion  
+}
 
-
+//*******************************************TARJETA 1 + FUNCIONAMIENTO GENERAL DE 6 TARJETAS******************************************************
 void ActualizarMEF_TARJ1(void) {
     switch (eA_TARJETA1) {
         case TARJETA1_S1:
 
-                state = true;                       //LED DE LA TARJETA1 PRENDIDO 
-                tiraState(state,1);
+                state = true;                         //LED DE LA TARJETA1 PRENDIDO 
+                tiraState(state,1);                  //
                 eA_TARJETA1 = TARJETA1_S2;          // Cambiar a otro estado
-                tInicio_1 = millis();        // También inicia temporizacion
+                tInicio_TARJ1 = millis();          // También inicia temporizacion
             
             break;
         case TARJETA1_S2:
             
-            if (millis() - tInicio_1 > 500) {                 
-                eA_TARJETA1 = TARJETA1_S1;                   // Cambiar a otro estado
-                                                            // También inicia temporizacion 
-                !state;                            //LED DE LA TARJETA1 APAGADO    
+            if (millis() - tInicio_TARJ1 > 500) {                 
+                eA_TARJETA1 = TARJETA1_S1;                  // Cambiar a otro estado                                                           
+                !state;                                    //LED DE LA TARJETA1 APAGADO    
             }
-            if(TARJETA1==0){
-                  eA_TARJETA1 = TARJETA1_S3;                   // Cambiar a otro estado
-                  //INCOMPLETO (SUMA PUNTO Y SONIDO)
-                  modulo.playSpecified(5);
-                  LED_TARJ1=1;                            //LED DE LA TARJETA1 PRENDIDO                                              //INCOMPLETO
+            if(TARJETA1==0 && MULTIBALL==1){
+                  eA_TARJETA1 = TARJETA1_S4;                  // Cambiar a otro estado
+                  puntaje +=100;                             //suma puntos
+                  modulo.playSpecified(5);                  //sonido
+                  state = true;                            //LED DE LA TARJETA1 PRENDIDO   
+                  banco_tarjetas++;                                           
               }
-              if(TARJETA1==0 && MULTIBALL==1){
-                  eA_TARJETA1 = TARJETA1_S4;                   // Cambiar a otro estado
-                  //INCOMPLETO (SUMA PUNTO Y SONIDO)
-                  LED_TARJ1=1;                            //LED DE LA TARJETA1 PRENDIDO                                              //INCOMPLETO
-              }
+            else(TARJETA1==0){
+                  eA_TARJETA1 = TARJETA1_S3;              // Cambiar a otro estado     
+                  puntaje +=100;                         //suma puntos
+                  modulo.playSpecified(5);              //sonido
+                  state = true;                        //LED DE LA TARJETA1 PRENDIDO
+                  banco_tarjetas++;
+              }             
             break;
         case TARJETA1_S3:
            
-            if(BANCO_DE_TARJETAS==1){
-                  eA_TARJETA1 = TARJETA1_S1;                   // Cambiar a otro estado
+            if(banco_tarjetas==6){
+                  eA_TARJETA1 = TARJETA1_S1;                      // Cambiar a otro estado inicial
+                  banco_tarjetas=0;                              //reinicio la suma de las tarjetas golpeadas
+                  banco_tarjetas_completo=1;                    //se golpearon las 6 tarjetas
               }
             
             break;
                    
         case TARJETA1_S4:
             
-            if(BANCO_DE_TARJETAS==1){
-                  //SUMA PUNTUAJE ESPECIAL
-                  eA_TARJETA1 = TARJETA1_S1;                   // Cambiar a otro estado
+            if(banco_tarjetas==6){
+                  puntaje +=500;                                   //suma puntos especiales
+                  eA_TARJETA1 = TARJETA1_S1;                      // Cambiar a otro estado
+                  banco_tarjetas=0;                              //reinicio la suma de las tarjetas golpeadas
+                  banco_tarjetas_multiball=1;                   //se golpearon las 6 tarjetas
               }
             break;
         default:
@@ -230,4 +259,159 @@ void ActualizarMEF_TARJ1(void) {
             InicializarMEF_TARJ1();
             
     }
+}
+
+//*****************************TARJETA 2***********************************
+void ActualizarMEF_TARJ2(void) {
+    switch (eA_TARJETA2) {
+        case TARJETA2_S1:
+
+                state = true;                         //LED DE LA TARJETA1 PRENDIDO 
+                tiraState(state,1);                  //
+                eA_TARJETA2 = TARJETA2_S2;          // Cambiar a otro estado
+                tInicio_TARJ2 = millis();          // También inicia temporizacion
+            
+            break;
+        case TARJETA2_S2:
+            
+            if (millis() - tInicio_TARJ2 > 500) {                 
+                eA_TARJETA2 = TARJETA2_S1;                  // Cambiar a otro estado                                                           
+                !state;                                    //LED DE LA TARJETA1 APAGADO    
+            }
+            if(TARJETA2==0 && MULTIBALL==1){
+                  eA_TARJETA2 = TARJETA2_S4;                  // Cambiar a otro estado
+                  puntaje +=100;                             //suma puntos
+                  modulo.playSpecified(5);                  //sonido
+                  state = true;                            //LED DE LA TARJETA1 PRENDIDO   
+                  banco_tarjetas++;                                           
+              }
+            else(TARJETA2==0){
+                  eA_TARJETA2 = TARJETA2_S3;              // Cambiar a otro estado     
+                  puntaje +=100;                         //suma puntos
+                  modulo.playSpecified(5);              //sonido
+                  state = true;                        //LED DE LA TARJETA1 PRENDIDO
+                  banco_tarjetas++;
+              }             
+            break;
+        case TARJETA2_S3:
+           
+            if(banco_tarjetas==6){
+                  eA_TARJETA2 = TARJETA2_S1;                      // Cambiar a otro estado inicial                 
+              }
+            
+            break;
+                   
+        case TARJETA2_S4:
+            
+            if(banco_tarjetas==6){                 
+                  eA_TARJETA2 = TARJETA2_S1;                      // Cambiar a otro estado                
+              }
+            break;
+        default:
+            //Si algo modificó la variable estadoActual TARJETA1
+            // a un estado no válido llevo la MEF a un 
+            // lugar seguro, por ejemplo, la reinicio:
+            InicializarMEF_TARJ2();
+            
+    }
+}
+
+//*****************************TARJETA 7 ESPECIAL***********************************
+void ActualizarMEF_TARJ7(void) {
+    switch (eA_TARJETA7) {
+        case TARJETA7_S1:
+
+                state = true;                         //LED DE LA TARJETA1 PRENDIDO 
+                tiraState(state,1);                  //
+                eA_TARJETA7 = TARJETA7_S2;          // Cambiar a otro estado
+                tInicio_TARJ7 = millis();          // También inicia temporizacion
+            
+            break;
+        case TARJETA7_S2:
+            
+            if (millis() - tInicio_TARJ7 > 500) {                 
+                eA_TARJETA7 = TARJETA7_S1;                  // Cambiar a otro estado                                                           
+                !state;                                    //LED DE LA TARJETA1 APAGADO    
+            }
+            if(TARJETA7==0 && MULTIBALL==1){
+                  eA_TARJETA7 = TARJETA7_S4;                  // Cambiar a otro estado
+                  puntaje +=100;                             //suma puntos
+                  modulo.playSpecified(5);                  //sonido
+                  state = true;                            //LED DE LA TARJETA1 PRENDIDO   
+                                                            
+              }
+            else(TARJETA7==0){
+                  eA_TARJETA7 = TARJETA7_S3;              // Cambiar a otro estado     
+                  puntaje +=100;                         //suma puntos
+                  modulo.playSpecified(5);              //sonido
+                  state = true;                        //LED DE LA TARJETA1 PRENDIDO
+                  
+              }             
+            break;
+        case TARJETA7_S3:
+           
+           
+            
+            break;
+                   
+        case TARJETA7_S4:
+            
+            
+            break;
+        default:
+            //Si algo modificó la variable estadoActual TARJETA1
+            // a un estado no válido llevo la MEF a un 
+            // lugar seguro, por ejemplo, la reinicio:
+            InicializarMEF_TARJ7();
+            
+    }
+}
+
+//***********************************MULTIBALL*******************************************
+void ActualizarMEF_MULTIBALL(void){
+      switch (eA_MULTIBALL) {
+        case PUERTA_ABIERTA:                          
+        
+            if(banco_tarjetas_completo == 1){
+              eA_MULTIBALL = PUERTA_CERRADA;                  //cambia de estado
+              SERVO1 = 1;                                    //se cierra la puerta para guardar pelotitas
+              contador_colecionado_multiball = 0;           //reinicio el contador para empezar a contar 
+            }
+                
+            break;
+        case PUERTA_CERRADA:
+
+            if(SENSOR_MULTIBALL==1){
+              contador_colecionado_multiball++;           //cuenta las bolas guardadas
+            }
+            
+            if(contador_colecionado_multiball == 3){
+              eA_MULTIBALL = MULTIBALL_ESPERA;           //cambia de estado  
+              MULTIBALL = 1;                            // activo multiball  
+            }
+                       
+            break;
+        case MULTIBALL_ESPERA:
+           
+            if(banco_tarjetas_multiball = 1){
+             tInicio_MULTIBALL = millis();              // inicia temporizacion
+             MULTIBALL = 0;                            // desactivo multiball  
+             eA_MULTIBALL = MULTIBALL_ACTIVO;         //cambia de estado 
+             SERVO1 = 0;                             //se abre la puerta para guardar pelotitas 
+            }
+            
+            break;
+                   
+        case MULTIBALL_ACTIVO:
+            if(millis() - tInicio_1 > 5000){
+             eA_MULTIBALL = PUERTA_ABIERTA;           //cambia de estado   
+                 
+            }
+            break;
+        default:
+            //Si algo modificó la variable estadoActual PUERTA_ABIERTA
+            // a un estado no válido llevo la MEF a un 
+            // lugar seguro, por ejemplo, la reinicio:
+            InicializarMEF_MULTIBALL();
+     }
 }
