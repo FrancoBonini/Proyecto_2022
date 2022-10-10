@@ -225,7 +225,7 @@ void ActualizarMEF_TARJ1(void) {
                   state = true;                            //LED DE LA TARJETA1 PRENDIDO   
                   banco_tarjetas++;                                           
               }
-            else(TARJETA1==0){
+             else if(TARJETA1==0){
                   eA_TARJETA1 = TARJETA1_S3;              // Cambiar a otro estado     
                   puntaje +=100;                         //suma puntos
                   modulo.playSpecified(5);              //sonido
@@ -285,7 +285,7 @@ void ActualizarMEF_TARJ2(void) {
                   state = true;                            //LED DE LA TARJETA1 PRENDIDO   
                   banco_tarjetas++;                                           
               }
-            else(TARJETA2==0){
+            else if(TARJETA2==0){
                   eA_TARJETA2 = TARJETA2_S3;              // Cambiar a otro estado     
                   puntaje +=100;                         //suma puntos
                   modulo.playSpecified(5);              //sonido
@@ -340,7 +340,7 @@ void ActualizarMEF_TARJ7(void) {
                   state = true;                            //LED DE LA TARJETA1 PRENDIDO   
                                                             
               }
-            else(TARJETA7==0){
+           if else(TARJETA7==0){
                   eA_TARJETA7 = TARJETA7_S3;              // Cambiar a otro estado     
                   puntaje +=100;                         //suma puntos
                   modulo.playSpecified(5);              //sonido
