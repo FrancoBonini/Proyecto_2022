@@ -413,7 +413,7 @@ void actualizarMEF_Juego(){
     break;
 
     case Game3:
-        if(sensorA_1 == 1 || sensorA_2 == 1 || sensorA_3 == 1 || sensorA_4 == 1){
+        if(digitalRead(sensorA_1) == 1 || digitalRead(sensorA_2) == 1 || digitalRead(sensorA_3) == 1 || digitalRead(sensorA_4) == 1){
           jugando = 1;
           modulo.playSpecified(6);
           tira.setPixelColor(numero_led,255,255,255);
@@ -424,14 +424,14 @@ void actualizarMEF_Juego(){
     break;
     
     case Game4:
-         if(sensor_over2 == 1){
+         if(digitalRead(sensor_over2) == 1){
           modulo.playSpecified(6);
           tira.setPixelColor(numero_led,255,255,255);
           tira.show();
           
           estadoJuego = Game5;
          }
-         if(sensor_over3 == 1){
+         if(digitalRead(sensor_over3) == 1){
           modulo.playSpecified(6);
           tira.setPixelColor(numero_led,255,255,255);
           tira.show();
@@ -439,7 +439,7 @@ void actualizarMEF_Juego(){
           estadoJuego = Game5;
          }
 
-         if(sensor_over == 1){
+         if(digitalRead(sensor_over) == 1){
           modulo.playSpecified(6);
           tira.setPixelColor(numero_led,255,255,255);
           tira.show();
@@ -470,7 +470,7 @@ void actualizarMEF_Juego(){
 
     break;
     case Game5:
-    if(sensor_over == 1){
+    if(digitalRead(sensor_over) == 1){
           modulo.playSpecified(6);
           tira.setPixelColor(numero_led,255,255,255);
           tira.show();
